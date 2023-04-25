@@ -37,7 +37,7 @@ The default vagrant environment that will be generate is:
  ## Requirements:
  You need [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](https://www.vagrantup.com/) installed on your machine.
  
- *I had VirtualBox 7.0.8 and Vagrant 2.3.4 on my Ubuntu 22.04 LTS*
+ *I had VirtualBox 6.1.38 and Vagrant 2.3.4 on my Ubuntu 22.04.2 LTS*
  
  ## How to use:
  If above setup is OK , to setup the cluster you just need to follow these steps:

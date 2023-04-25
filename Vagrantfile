@@ -4,9 +4,12 @@ control_plane_endpoint = "172.16.16.100:6443" # This IP is defined as a virtual 
 pod_network_cidr = "10.244.0.0/16"
 pod_network_type = "calico" # choose between calico and flannel
 version = "1.27.0-00"   # choose your kubernete version here. 1.26 or 1.27 or ...
-LoadBalancerCount = ENV['KUBE_LAB_LBCOUNT'] || 2  # choose number of VMs for LoadBalancer (HAProxy-Keepalived)
-MasterCount = ENV['KUBE_LAB_MCOUNT'] || 3   # choose number of VMs for control-plains of your cluster
-WorkerCount = ENV['KUBE_LAB_WCOUNT'] || 2   # choose number of VMs for workers of your cluster
+LoadBalancerCount_t = ENV['KUBE_LAB_LBCOUNT'] || "2"  # choose number of VMs for LoadBalancer (HAProxy-Keepalived)
+LoadBalancerCount = LoadBalancerCount_t.to_i
+MasterCount_t = ENV['KUBE_LAB_MCOUNT'] || "3"   # choose number of VMs for control-plains of your cluster
+MasterCount = MasterCount_t.to_i
+WorkerCount_t = ENV['KUBE_LAB_WCOUNT'] || "2"   # choose number of VMs for workers of your cluster
+WorkerCount = WorkerCount_t.to_i
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
@@ -72,34 +75,35 @@ Vagrant.configure("2") do |config|
       end
     end
 
-
-    (2..MasterCount).each do |i|
-      domain_master = "#{domain}.master#{i}"
-      master_node_ip = "172.16.16.10#{i}"
-      config.vm.define "#{domain}.master#{i}" do |master|
-        master.vm.provision :shell, path: "kubeadm/bootstrap.sh", env: { "VERSION" => version }
-        master.vm.box = "ubuntu/focal64"
-        master.vm.hostname = "#{domain_master}"
-        master.vm.network "private_network", ip: "172.16.16.10#{i}"
-        # setup cluster ip and addresses in hosts
-        (1..MasterCount).each do |j|
-          master.vm.provision "shell", env: {"DOMAIN" => "#{domain}.master#{j}", "MASTER_NODE_IP" => "172.16.16.10#{j}"} ,inline: <<-SHELL 
-          echo "$MASTER_NODE_IP $DOMAIN" >> /etc/hosts 
-          SHELL
-        end
-        (1..2).each do |nodeIndex|
-          master.vm.provision "shell", env: {"DOMAIN" => "#{domain}.worker#{nodeIndex}", "NODE_INDEX" => nodeIndex}, inline: <<-SHELL 
-          echo "172.16.16.20$NODE_INDEX $DOMAIN" >> /etc/hosts 
-          SHELL
-        end
-        master.vm.provision "shell", path: "kubeadm/join-other-master-command.sh", env: {"MASTER_NODE_IP" => master_node_ip, "NODE_NAME" => "#{domain}.master#{i}"}
-        master.vm.provision "shell", path: "kubeadm/join-other-masters.sh"
-        master.vm.provision "shell", path:"kubeadm/init-other-masters.sh", env: {"K8S_POD_NETWORK_TYPE" => pod_network_type, "MASTER_NODE_IP" => master_node_ip}
-        master.vm.provider "virtualbox" do |vb|
-          vb.name   = "#{domain}.master#{i}"
-          vb.memory = ENV['KUBE_LAB_M_RAM'] || "2048"
-          vb.cpus = ENV['KUBE_LAB_M_CPU'] || "2"
-          vb.customize ["modifyvm", :id, "--nic1", "nat"]
+    if MasterCount >= 2 
+      (2..MasterCount).each do |i|
+        domain_master = "#{domain}.master#{i}"
+        master_node_ip = "172.16.16.10#{i}"
+        config.vm.define "#{domain}.master#{i}" do |master|
+          master.vm.provision :shell, path: "kubeadm/bootstrap.sh", env: { "VERSION" => version }
+          master.vm.box = "ubuntu/focal64"
+          master.vm.hostname = "#{domain_master}"
+          master.vm.network "private_network", ip: "172.16.16.10#{i}"
+          # setup cluster ip and addresses in hosts
+          (1..MasterCount).each do |j|
+            master.vm.provision "shell", env: {"DOMAIN" => "#{domain}.master#{j}", "MASTER_NODE_IP" => "172.16.16.10#{j}"} ,inline: <<-SHELL 
+            echo "$MASTER_NODE_IP $DOMAIN" >> /etc/hosts 
+            SHELL
+          end
+          (1..2).each do |nodeIndex|
+            master.vm.provision "shell", env: {"DOMAIN" => "#{domain}.worker#{nodeIndex}", "NODE_INDEX" => nodeIndex}, inline: <<-SHELL 
+            echo "172.16.16.20$NODE_INDEX $DOMAIN" >> /etc/hosts 
+            SHELL
+          end
+          master.vm.provision "shell", path: "kubeadm/join-other-master-command.sh", env: {"MASTER_NODE_IP" => master_node_ip, "NODE_NAME" => "#{domain}.master#{i}"}
+          master.vm.provision "shell", path: "kubeadm/join-other-masters.sh"
+          master.vm.provision "shell", path:"kubeadm/init-other-masters.sh", env: {"K8S_POD_NETWORK_TYPE" => pod_network_type, "MASTER_NODE_IP" => master_node_ip}
+          master.vm.provider "virtualbox" do |vb|
+            vb.name   = "#{domain}.master#{i}"
+            vb.memory = ENV['KUBE_LAB_M_RAM'] || "2048"
+            vb.cpus = ENV['KUBE_LAB_M_CPU'] || "2"
+            vb.customize ["modifyvm", :id, "--nic1", "nat"]
+          end
         end
       end
     end
