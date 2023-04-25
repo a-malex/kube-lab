@@ -4,9 +4,9 @@ control_plane_endpoint = "172.16.16.100:6443" # This IP is defined as a virtual 
 pod_network_cidr = "10.244.0.0/16"
 pod_network_type = "calico" # choose between calico and flannel
 version = "1.27.0-00"   # choose your kubernete version here. 1.26 or 1.27 or ...
-LoadBalancerCount = 2  # choose number of VMs for LoadBalancer (HAProxy-Keepalived)
-MasterCount = 3   # choose number of VMs for control-plains of your cluster
-WorkerCount = 2   # choose number of VMs for workers of your cluster
+LoadBalancerCount = ENV['KUBE_LAB_LBCOUNT'] || 2  # choose number of VMs for LoadBalancer (HAProxy-Keepalived)
+MasterCount = ENV['KUBE_LAB_MCOUNT'] || 3   # choose number of VMs for control-plains of your cluster
+WorkerCount = ENV['KUBE_LAB_WCOUNT'] || 2   # choose number of VMs for workers of your cluster
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
@@ -17,8 +17,8 @@ Vagrant.configure("2") do |config|
         loadbalancer.vm.box  = "ubuntu/focal64"
         loadbalancer.vm.provider "virtualbox" do |v|
           v.name   = "#{domain}.loadbalancer#{i}"
-          v.memory = "1024"
-          v.cpus   = "1"
+          v.memory = ENV['KUBE_LAB_LB_RAM'] || "512"
+          v.cpus   = ENV['KUBE_LAB_LB_CPU'] || "1"
           v.customize ["modifyvm", :id, "--nic1", "nat"]
 ######### To use ubuntu-22.04LTS as your vm os you can use below configs instead of above configs in all sections but be aware that this alocate more resources  
         # loadbalancer.vm.box               = "generic/ubuntu2204"
@@ -66,8 +66,8 @@ Vagrant.configure("2") do |config|
       m_master.vm.provision "shell", path:"kubeadm/init-master.sh", env: {"K8S_CONTROL_PLANE_ENDPOINT" => control_plane_endpoint, "K8S_POD_NETWORK_CIDR" => pod_network_cidr, "K8S_POD_NETWORK_TYPE" => pod_network_type, "MASTER_NODE_IP" => main_master_node_ip, "NODE_NAME" => "#{domain}.master1"}
       m_master.vm.provider "virtualbox" do |vb|
         vb.name   = "#{domain}.master1"
-        vb.memory = "3072"
-        vb.cpus = "1"
+        vb.memory = ENV['KUBE_LAB_M_RAM'] || "2048"
+        vb.cpus = ENV['KUBE_LAB_M_CPU'] || "2"
         vb.customize ["modifyvm", :id, "--nic1", "nat"]
       end
     end
@@ -97,8 +97,8 @@ Vagrant.configure("2") do |config|
         master.vm.provision "shell", path:"kubeadm/init-other-masters.sh", env: {"K8S_POD_NETWORK_TYPE" => pod_network_type, "MASTER_NODE_IP" => master_node_ip}
         master.vm.provider "virtualbox" do |vb|
           vb.name   = "#{domain}.master#{i}"
-          vb.memory = "3072"
-          vb.cpus = "1"
+          vb.memory = ENV['KUBE_LAB_M_RAM'] || "2048"
+          vb.cpus = ENV['KUBE_LAB_M_CPU'] || "2"
           vb.customize ["modifyvm", :id, "--nic1", "nat"]
         end
       end
@@ -136,8 +136,8 @@ Vagrant.configure("2") do |config|
             SHELL
         worker.vm.provider "virtualbox" do |vb|
           vb.name   = "#{domain}.worker#{i}"
-          vb.memory = "3072"
-          vb.cpus = "1"
+          vb.memory = ENV['KUBE_LAB_W_RAM'] || "2048"
+          vb.cpus = ENV['KUBE_LAB_W_CPU'] || "1"
           vb.customize ["modifyvm", :id, "--nic1", "nat"]
         end
       end
