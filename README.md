@@ -14,15 +14,16 @@ This documentation describes what will be setting up on your machine and how to 
 
 
 ## Vagrant Environment
+The default vagrant environment that will be generate is:
 |Role|NAME|IP|OS|RAM|CPU|
 |----|----|----|----|----|----|
-|Load Balancer|kube.lab.loadbalancer1|172.16.16.51|Ubuntu 20.04|1G|1|
-|Load Balancer|kube.lab.loadbalancer2|172.16.16.52|Ubuntu 20.04|1G|1|
-|Master|kube.lab.master1|172.16.16.101|Ubuntu 20.04|3G|1|
-|Master|kube.lab.master2|172.16.16.102|Ubuntu 20.04|3G|1|
-|Master|kube.lab.master3|172.16.16.103|Ubuntu 20.04|3G|1|
-|Worker|kube.lab.worker1|172.16.16.201|Ubuntu 20.04|3G|1|
-|Worker|kube.lab.worker2|172.16.16.201|Ubuntu 20.04|3G|1|
+|Load Balancer|kube.lab.loadbalancer1|172.16.16.51|Ubuntu 20.04|512 MB|1|
+|Load Balancer|kube.lab.loadbalancer2|172.16.16.52|Ubuntu 20.04|512 MB|1|
+|Master|kube.lab.master1|172.16.16.101|Ubuntu 20.04|2G|2|
+|Master|kube.lab.master2|172.16.16.102|Ubuntu 20.04|2G|2|
+|Master|kube.lab.master3|172.16.16.103|Ubuntu 20.04|2G|2|
+|Worker|kube.lab.worker1|172.16.16.201|Ubuntu 20.04|2G|1|
+|Worker|kube.lab.worker2|172.16.16.201|Ubuntu 20.04|2G|1|
 
 
 *If these configs are not suitable, you can reduce the value of ram and the number of VMs in vagrant file*
@@ -64,7 +65,7 @@ This documentation describes what will be setting up on your machine and how to 
     ```
     
 ## How to set your own values for the kube-lab cluster:
-You can use below environ variables to set up your kube-lab cluster:
+You can use below environment variables to set up your kube-lab cluster:
 |ENVIRONEMT_VARIABLE|DEFAULT_VALUE|DESCRIPTION|
 |----|----|----|
 |KUBE_LAB_LBCOUNT| 2 |Number of LoadBalancer VM|
