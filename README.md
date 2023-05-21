@@ -80,8 +80,10 @@ You can use below environment variables to set up your kube-lab cluster:
 
 You can set yout own values by exporting them at first for example ``` export KUBE_LAB_WCOUNT=1 ``` and then run ``` vagrant up ``` command.
 
+*To persist your own values for kube-lab cluster add ``` export KUBE_LAB_WCOUNT=1 ``` to the end of ``` ~/bashrc ``` file.*
+ 
 
-# How to contribute?
+#  How to contribute?
 You can fork and develop your idea.
 
 *Copyright 2023 a-malex <ahmadmalekiha@gmail.com>*
